@@ -24,6 +24,7 @@ public class ExtensionPointAspect {
         //
         try {
             List<com.springframework.extensionpoint.model.ExtensionPoint> extensionPoints = ExtensionPointScannerRegister.getExtensionPoints(extensionPoint.code());
+            // execute extensionPoints
             // use ResultStrategy if need
         } catch (Exception ex){
             // use ExceptionStrategy

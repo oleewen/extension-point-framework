@@ -1,8 +1,8 @@
 package com.springframework.extensionpoint.annotation;
 
-import com.springframework.extensionpoint.stragety.ExceptionStrategy;
-import com.springframework.extensionpoint.stragety.ResultStrategy;
-import com.springframework.extensionpoint.stragety.RouterStrategy;
+import com.springframework.extensionpoint.model.ExceptionStrategy;
+import com.springframework.extensionpoint.model.ResultStrategy;
+import com.springframework.extensionpoint.model.RouterStrategy;
 
 import java.lang.annotation.*;
 

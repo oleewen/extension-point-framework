@@ -1,4 +1,4 @@
-package com.springframework.extensionpoint.stragety;
+package com.springframework.extensionpoint.model;
 
 import java.util.List;
 
