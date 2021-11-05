@@ -1,11 +1,13 @@
 package com.springframework.extensionpoint.scan;
 
+import com.springframework.extensionpoint.annotation.ExtensionPoint;
 import com.springframework.extensionpoint.model.*;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 
 import java.util.Arrays;
@@ -47,6 +49,7 @@ public class ExtensionPointScannerRegister implements ImportBeanDefinitionRegist
     private void doScanAndRegistryBean(BeanDefinitionRegistry beanDefinitionRegistry, Set<String> scanPackages) {
         ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(beanDefinitionRegistry);
         scanner.addIncludeFilter(new AssignableTypeFilter(IExtensionPoint.class));
+        scanner.addIncludeFilter(new AnnotationTypeFilter(ExtensionPoint.class));
         scanner.addIncludeFilter(new AssignableTypeFilter(RouterStrategy.class));
         scanner.addIncludeFilter(new AssignableTypeFilter(ResultStrategy.class));
         scanner.addIncludeFilter(new AssignableTypeFilter(ExceptionStrategy.class));
