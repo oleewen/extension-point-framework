@@ -2,6 +2,6 @@ package com.springframework.extensionpoint.model;
 
 import java.util.List;
 
-public interface RouterStrategy {
-    <T,V> List<T> execute(V param);
+public interface RouterStrategy<V, T extends IExtensionPoint> {
+    List<T> execute(String code, V param);
 }
