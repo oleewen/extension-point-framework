@@ -1,6 +1,6 @@
 package com.springframework.extensionpoint.sample.businessIdentity;
 
-import com.springframework.extensionpoint.aspect.ExtensionBootstrap;
+import com.springframework.extensionpoint.aspect.ExtensionExecutor;
 import com.springframework.extensionpoint.sample.JunitApplication;
 import com.springframework.extensionpoint.support.businessIdentity.IdentityParam;
 import org.junit.jupiter.api.Test;
@@ -38,7 +38,7 @@ public class MainTest {
         actualIdentity.put("BUSINESS_LINE", "RETAIL");
         actualIdentity.put("SHOP_ID", "12345");
         identityParam.setActualIdentity(actualIdentity);
-        List<String> attributes = ExtensionBootstrap.execute("getOrderAttributesOverlay", identityParam, new Object[]{"E202111051111111"});
+        List<String> attributes = ExtensionExecutor.execute("getOrderAttributesOverlay", identityParam, new Object[]{"E202111051111111"});
         System.out.println(attributes);
         assert attributes.size() == 2;
     }
@@ -62,7 +62,7 @@ public class MainTest {
         actualIdentity.put("BUSINESS_LINE", "RETAIL");
         actualIdentity.put("SHOP_ID", "11111");
         identityParam.setActualIdentity(actualIdentity);
-        List<String> attributes = ExtensionBootstrap.execute("getOrderAttributesOverlay", identityParam, new Object[]{"E202111051111111"});
+        List<String> attributes = ExtensionExecutor.execute("getOrderAttributesOverlay", identityParam, new Object[]{"E202111051111111"});
         System.out.println(attributes);
         assert attributes.size() == 1;
     }
@@ -86,7 +86,7 @@ public class MainTest {
         actualIdentity.put("BUSINESS_LINE", "RETAIL");
         actualIdentity.put("SHOP_ID", "12345");
         identityParam.setActualIdentity(actualIdentity);
-        List<String> attributes = ExtensionBootstrap.execute("getOrderAttributesOptimal", identityParam, new Object[]{"E202111051111111"});
+        List<String> attributes = ExtensionExecutor.execute("getOrderAttributesOptimal", identityParam, new Object[]{"E202111051111111"});
         System.out.println(attributes);
         assert attributes.size() == 1;
     }
