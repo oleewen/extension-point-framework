@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
  * Created on 2021/11/05 12:53
  */
 @NoArgsConstructor
-public class ExtensionBootstrap {
+public class ExtensionExecutor {
 
     /**
      * 执行扩展点
