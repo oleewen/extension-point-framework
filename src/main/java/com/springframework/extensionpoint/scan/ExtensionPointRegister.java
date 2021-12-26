@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.springframework.extensionpoint.annotation.Extension;
 import com.springframework.extensionpoint.annotation.ExtensionPoint;
-import com.springframework.extensionpoint.model.RouterParam;
 import com.springframework.extensionpoint.model.*;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
@@ -24,7 +23,15 @@ import static org.springframework.util.ClassUtils.getAllInterfacesForClass;
 @Component
 public class ExtensionPointRegister implements ApplicationListener<ContextRefreshedEvent> {
 
+    /**
+     * key：扩展点code
+     * value：扩展点对象
+     */
     private static final Map<ExtensionPointCode, ExtensionPointObject> CODE_EXTENSION_POINT_OBJECT_MAP = new ConcurrentHashMap<>();
+    /**
+     * key：接口名+":"+方法名
+     * value：扩展点code
+     */
     private static final Map<String, ExtensionPointCode> INTERFACE_CLASS_EXTENSION_POINT_MAP = new ConcurrentHashMap<>();
 
     @Override
