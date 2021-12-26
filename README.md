@@ -1,33 +1,53 @@
 # extension-point-framework
 
-## 扩展点定义
+## 一、扩展点定义（@ExtensionPoint）
 
-## 扩展点实现
+    定义在接口方法上，需要指定code，code应用内全局唯一。可自定义指定扩展点策略
 
-## 扩展点策略
+## 二、扩展点实现（@Extension）
 
-## 扩展点执行，两种方式实现扩展点执行（推荐第一种更优雅）
+    定义在接口实现方法上（暂不支持定义在类上），需要填写扩展点实现自身的维度特征
 
-### 一、使用@ExtensionPointAutowired注解注入扩展点并调用
+## 三、扩展点策略
 
-**1. 使用简介**
+### 1. 路由策略（RouterStrategy）：决策出需要执行哪些扩展点实现
 
-    1. 使用@ExtensionPointAutowired替换@Autowire注入扩展点
-    2. 与正常接口调用使用无异
+    @ExtensionPoint的属性，默认已经实现全匹配和取最优两种策略，如果需要自定义，可实现RouterStrategy接口，在@ExtensionPoint上指定具体实现即可
 
-**2. Sample**
+### 2. 结果处理策略（ResultStrategy）：对扩展点执行结果进行合并处理
 
-    com.springframework.extensionpoint.sample.businessIdentity.ExtensionPointAutowiredTest
+    @ExtensionPoint的属性，默认实现为List结果合并策略
 
-### 二、使用ExtensionExecutor直接调用扩展点
+### 3. 异常策略（ExceptionStrategy）：对异常结果进行处理策略
 
-**1. 使用简介**
+    @ExtensionPoint的属性，默认实现为不处理
 
-    1. 直接调用静态类ExtensionExecutor.execute执行
-    2. 需要显示传入扩展点接口code、接口调用参数数组
+### 4. 维度解析处理器（DimensionHandler）：对维度特征值进行解析
 
-**2. Sample**
+    @Extension的属性，用于解析@Extension的dimensions()值，默认实现为DefaultDimensionHandler
 
-    com.springframework.extensionpoint.sample.businessIdentity.ExtensionPointExecutorTest
+## 四、扩展点执行（推荐第一种更优雅）
+
+### 1. 使用@ExtensionPointAutowired注解注入扩展点并调用
+
+- 使用简介
+
+      1. 使用@ExtensionPointAutowired替换@Autowire注入扩展点
+      2. 与正常接口调用使用无异
+
+- Sample
+
+      com.springframework.extensionpoint.sample.businessIdentity.ExtensionPointAutowiredTest
+
+### 2. 使用ExtensionExecutor直接调用扩展点
+
+- 使用简介
+
+      1. 直接调用静态类ExtensionExecutor.execute执行
+      2. 需要显示传入扩展点接口code、接口调用参数数组
+
+- Sample
+
+      com.springframework.extensionpoint.sample.businessIdentity.ExtensionPointExecutorTest
 
 
