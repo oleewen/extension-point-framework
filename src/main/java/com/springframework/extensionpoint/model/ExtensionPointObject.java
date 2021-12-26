@@ -28,7 +28,7 @@ public class ExtensionPointObject {
     /**
      * 异常策略
      */
-    private Class<? extends ExceptionStrategy<?, ?>> exceptionStrategy;
+    private Class<? extends ExceptionStrategy<?>> exceptionStrategy;
     /**
      * 扩展点实现
      */

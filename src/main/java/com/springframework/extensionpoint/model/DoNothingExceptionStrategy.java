@@ -8,12 +8,11 @@ import lombok.SneakyThrows;
  * @author qiye -- fuqile@youzan.com
  * Created on 2021/11/04 22:04
  */
-public class DoNothingExceptionStrategy implements ExceptionStrategy<Object,Object>{
+public class DoNothingExceptionStrategy implements ExceptionStrategy<Object> {
 
     @SneakyThrows
     @Override
-    public Object execute(Object param, Throwable throwable) {
+    public Object execute(Object[] objects, Throwable throwable) {
         throw throwable;
     }
-
 }

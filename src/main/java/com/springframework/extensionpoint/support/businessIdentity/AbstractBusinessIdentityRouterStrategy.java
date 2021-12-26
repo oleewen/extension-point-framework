@@ -1,6 +1,6 @@
 package com.springframework.extensionpoint.support.businessIdentity;
 
-import com.springframework.extensionpoint.aspect.RouterParam;
+import com.springframework.extensionpoint.model.RouterParam;
 import com.springframework.extensionpoint.model.ExtensionObject;
 import com.springframework.extensionpoint.model.IExtensionPoint;
 import com.springframework.extensionpoint.model.RouterStrategy;

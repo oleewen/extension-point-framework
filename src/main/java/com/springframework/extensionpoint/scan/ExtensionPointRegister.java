@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.springframework.extensionpoint.annotation.Extension;
 import com.springframework.extensionpoint.annotation.ExtensionPoint;
-import com.springframework.extensionpoint.aspect.RouterParam;
+import com.springframework.extensionpoint.model.RouterParam;
 import com.springframework.extensionpoint.model.*;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;

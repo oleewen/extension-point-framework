@@ -1,6 +1,5 @@
-package com.springframework.extensionpoint.aspect;
+package com.springframework.extensionpoint.model;
 
-import com.springframework.extensionpoint.model.ExtensionPointCode;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 

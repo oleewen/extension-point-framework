@@ -35,5 +35,5 @@ public @interface ExtensionPoint {
     /**
      * 异常策略
      */
-    Class<? extends ExceptionStrategy<?, ?>> exceptionStrategy() default DoNothingExceptionStrategy.class;
+    Class<? extends ExceptionStrategy<?>> exceptionStrategy() default DoNothingExceptionStrategy.class;
 }

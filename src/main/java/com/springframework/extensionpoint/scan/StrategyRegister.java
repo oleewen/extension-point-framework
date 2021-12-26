@@ -17,7 +17,7 @@ public class StrategyRegister {
 
     private static final Map<Class<? extends RouterStrategy<? extends IExtensionPoint>>, RouterStrategy<? extends IExtensionPoint>> ROUTER_STRATEGY_CLASS_MAP = new HashMap<>();
     private static final Map<Class<? extends ResultStrategy<?>>, ResultStrategy<?>> RESULT_STRATEGY_CLASS_MAP = new HashMap<>();
-    private static final Map<Class<? extends ExceptionStrategy<?, ?>>, ExceptionStrategy<?, ?>> EXCEPTION_STRATEGY_CLASS_MAP = new HashMap<>();
+    private static final Map<Class<? extends ExceptionStrategy<?>>, ExceptionStrategy<?>> EXCEPTION_STRATEGY_CLASS_MAP = new HashMap<>();
     private static final Map<Class<? extends DimensionHandler>, DimensionHandler> DIMENSION_HANDLER_CLASS_MAP = new HashMap<>();
 
     /**
@@ -45,8 +45,8 @@ public class StrategyRegister {
     }
 
     @SuppressWarnings({"unchecked"})
-    public void addExceptionStrategy(ExceptionStrategy<?, ?> exceptionStrategy) {
-        EXCEPTION_STRATEGY_CLASS_MAP.put((Class<? extends ExceptionStrategy<?, ?>>) exceptionStrategy.getClass(), exceptionStrategy);
+    public void addExceptionStrategy(ExceptionStrategy<?> exceptionStrategy) {
+        EXCEPTION_STRATEGY_CLASS_MAP.put((Class<? extends ExceptionStrategy<?>>) exceptionStrategy.getClass(), exceptionStrategy);
     }
 
     public void addDimensionHandler(DimensionHandler dimensionHandler) {
@@ -59,6 +59,10 @@ public class StrategyRegister {
 
     public ResultStrategy<?> getResultStrategy(Class<? extends ResultStrategy<?>> clazz) {
         return RESULT_STRATEGY_CLASS_MAP.get(clazz);
+    }
+
+    public ExceptionStrategy<?> getExceptionStrategy(Class<? extends ExceptionStrategy<?>> clazz) {
+        return EXCEPTION_STRATEGY_CLASS_MAP.get(clazz);
     }
 
     public DimensionHandler getDimensionHandler(Class<? extends DimensionHandler> clazz) {

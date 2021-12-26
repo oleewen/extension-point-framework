@@ -27,7 +27,7 @@ public class ExtensionPointInvocationHandler implements InvocationHandler {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+    public Object invoke(Object proxy, Method method, Object[] args) {
         String methodName = method.getName();
         Class<?>[] parameterTypes = method.getParameterTypes();
         if (parameterTypes.length == 0) {
@@ -39,9 +39,9 @@ public class ExtensionPointInvocationHandler implements InvocationHandler {
         } else if (parameterTypes.length == 1 && "equals".equals(methodName)) {
             return this.equals(args[0]);
         }
+        ExtensionPointCode extensionPointCode = ExtensionPointRegister.getExtensionPointCode(interfaceClass, method);
+        ExtensionPointObject extensionPointObject = ExtensionPointRegister.getExtensionPointObject(extensionPointCode);
         try {
-            ExtensionPointCode extensionPointCode = ExtensionPointRegister.getExtensionPointCode(interfaceClass, method);
-            ExtensionPointObject extensionPointObject = ExtensionPointRegister.getExtensionPointObject(extensionPointCode);
             RouterStrategy<? extends IExtensionPoint> routerStrategy = StrategyRegister.getInstance().getRouterStrategy(extensionPointObject.getRouterStrategy());
             if (routerStrategy == null) {
                 throw new RuntimeException("please set router strategy first");
@@ -72,10 +72,10 @@ public class ExtensionPointInvocationHandler implements InvocationHandler {
             return resultStrategy.execute(executeResultList);
         } catch (Exception ex) {
             // use ExceptionStrategy
-//            ExceptionStrategy<R, V> exceptionStrategy = ExtensionPointRegister.getExceptionStrategy(code);
-//            if (exceptionStrategy != null) {
-//                return exceptionStrategy.execute(param, ex);
-//            }
+            ExceptionStrategy<?> exceptionStrategy = StrategyRegister.getInstance().getExceptionStrategy(extensionPointObject.getExceptionStrategy());
+            if (exceptionStrategy != null) {
+                return exceptionStrategy.execute(args, ex);
+            }
             throw ex;
         }
     }

@@ -22,9 +22,16 @@ public class ExtensionExecutor {
 
     /**
      * 执行扩展点
+     * @param code 扩展点接口code标识
+     * @param args 扩展点接口参数数组
      */
     @SuppressWarnings("unchecked")
     public static <R> R execute(String code, Object[] args) {
+        ExtensionPointCode extensionPointCode = ExtensionPointCode.getInstance(code);
+        ExtensionPointObject extensionPointObject = ExtensionPointRegister.getExtensionPointObject(extensionPointCode);
+        if (extensionPointObject == null) {
+            throw new RuntimeException("extension point not found, code:" + extensionPointCode);
+        }
         try {
             List<IExtensionPoint> extensionPoints = ExtensionPointRegister.getExtensionPoints(code, args);
             if (CollectionUtils.isEmpty(extensionPoints)) {
@@ -44,11 +51,6 @@ public class ExtensionExecutor {
                 return null;
             }).collect(Collectors.toList());
             // use ResultStrategy
-            ExtensionPointCode extensionPointCode = ExtensionPointCode.getInstance(code);
-            ExtensionPointObject extensionPointObject = ExtensionPointRegister.getExtensionPointObject(extensionPointCode);
-            if (extensionPointObject == null) {
-                throw new RuntimeException("extension point not found, code:" + extensionPointCode);
-            }
             ResultStrategy<R> resultStrategy = (ResultStrategy<R>) StrategyRegister.getInstance().getResultStrategy(extensionPointObject.getResultStrategy());
             if (resultStrategy == null) {
                 throw new RuntimeException("result strategy can not null");
@@ -56,10 +58,10 @@ public class ExtensionExecutor {
             return resultStrategy.execute((List<R>) executeResultList);
         } catch (Exception ex) {
             // use ExceptionStrategy
-//            ExceptionStrategy<R, V> exceptionStrategy = ExtensionPointRegister.getExceptionStrategy(code);
-//            if (exceptionStrategy != null) {
-//                return exceptionStrategy.execute(param, ex);
-//            }
+            ExceptionStrategy<?> exceptionStrategy = StrategyRegister.getInstance().getExceptionStrategy(extensionPointObject.getExceptionStrategy());
+            if (exceptionStrategy != null) {
+                return (R) exceptionStrategy.execute(args, ex);
+            }
             throw ex;
         }
     }
