@@ -5,7 +5,7 @@ import com.google.common.collect.Maps;
 import java.util.Map;
 
 /**
- * 规则引擎请求缓存上下文（ThreadLocal）
+ * 缓存上下文（ThreadLocal）
  *
  * @author qiye -- fuqile@youzan.com Created on 2020/12/08 10:27
  */

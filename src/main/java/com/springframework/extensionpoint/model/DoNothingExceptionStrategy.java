@@ -12,7 +12,7 @@ public class DoNothingExceptionStrategy implements ExceptionStrategy<Object> {
 
     @SneakyThrows
     @Override
-    public Object execute(Object[] objects, Throwable throwable) {
+    public Object execute(Object[] args, Throwable throwable) {
         throw throwable;
     }
 }
