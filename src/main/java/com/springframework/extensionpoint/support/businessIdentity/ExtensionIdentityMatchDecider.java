@@ -1,9 +1,9 @@
 package com.springframework.extensionpoint.support.businessIdentity;
 
-import com.springframework.extensionpoint.annotation.Extension;
-import com.springframework.extensionpoint.model.RouterFeature;
-import com.springframework.extensionpoint.model.RouterFeatureStrategy;
-import com.springframework.extensionpoint.scan.ExtensionPointRegister;
+import com.springframework.extensionpoint.model.DimensionHandler;
+import com.springframework.extensionpoint.model.Dimensions;
+import com.springframework.extensionpoint.model.ExtensionObject;
+import com.springframework.extensionpoint.scan.StrategyRegister;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
@@ -13,7 +13,7 @@ import java.util.Set;
 /**
  * @author zhanganhua
  * @date 2021-10-13 11:05
- *
+ * <p>
  * 扩展点匹配决策器
  */
 public class ExtensionIdentityMatchDecider {
@@ -33,27 +33,27 @@ public class ExtensionIdentityMatchDecider {
 
     /**
      * 扩展点身份最优匹配
-     * @param candidateExtIdentities  候选拓展身份集合
-     * @param businessIdentity  当前流程业务身份
-     * @param orderedDimensionList  业务身份模版评分顺序
-     * @return 最优拓展点身份
      *
+     * @param candidateExtIdentities 候选拓展身份集合
+     * @param businessIdentity       当前流程业务身份
+     * @param orderedDimensionList   业务身份模版评分顺序
+     * @return 最优拓展点身份
+     * <p>
      * 无匹配 return null
      */
-    public static Extension extOptimalMatch(List<Extension> candidateExtIdentities, Map<String, String> businessIdentity, List<String> orderedDimensionList) {
+    public static ExtensionObject extOptimalMatch(List<ExtensionObject> candidateExtIdentities, Map<String, String> businessIdentity, List<String> orderedDimensionList) {
         if (CollectionUtils.isEmpty(orderedDimensionList)) {
             return null;
         }
-        Extension optimalExtensionPointImpl = null;
+        ExtensionObject optimalExtensionPointImpl = null;
         long highestScore = 0L;
-        for (Extension extension : candidateExtIdentities) {
-            RouterFeatureStrategy<RouterFeature> routerFeatureStrategy = ExtensionPointRegister.getRouterFeatureStrategy(extension);
-            if(routerFeatureStrategy == null){
+        for (ExtensionObject extension : candidateExtIdentities) {
+            DimensionHandler dimensionHandler = StrategyRegister.getInstance().getDimensionHandler(extension.getDimensionHandler());
+            if (dimensionHandler == null) {
                 continue;
             }
-            //TODO 强转校验
-            BusinessIdentityRouterFeature feature = (BusinessIdentityRouterFeature) routerFeatureStrategy.getFeature();
-            Map<String, Set<String>> extIdentityDimensionValueMap = feature.getApplicableIdentity();
+            Dimensions dimensions = dimensionHandler.parseDimensionValue(extension.getDimensions());
+            Map<String, Set<String>> extIdentityDimensionValueMap = dimensions.toMap();
 
             String score = getScore(businessIdentity, extIdentityDimensionValueMap, orderedDimensionList);
 

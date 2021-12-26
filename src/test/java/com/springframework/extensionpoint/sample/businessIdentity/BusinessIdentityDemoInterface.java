@@ -30,7 +30,7 @@ public interface BusinessIdentityDemoInterface extends IExtensionPoint {
      * 路由策略：根据业务线+店铺id路由，返回匹配度最高的
      * 结果策略: 返回值叠加
      *
-     * @return 所有订单属性
+     * @return 最优订单属性
      */
     @ExtensionPoint(code = "getOrderAttributesOptimal", routerStrategy = RetailShopIdMatchOptimalRouterStrategy.class, resultStrategy = MergeResultStrategy.class)
     List<String> getOrderAttributesOptimal(String orderNo);

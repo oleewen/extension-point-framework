@@ -1,7 +1,7 @@
 package com.springframework.extensionpoint.annotation;
 
+import com.springframework.extensionpoint.model.DefaultDimensionHandler;
 import com.springframework.extensionpoint.model.DimensionHandler;
-import com.springframework.extensionpoint.model.RouterFeatureStrategy;
 
 import java.lang.annotation.*;
 
@@ -12,16 +12,17 @@ import java.lang.annotation.*;
  * Created on 2021/11/04 22:04
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE, ElementType.METHOD)
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Documented
 public @interface Extension {
 
     /**
-     * 路由特征策略
+     * 路由维度值
      */
-    // Class<? extends RouterFeatureStrategy<?>> routerFeatureStrategy();
-
     String dimensions();
 
-    Class<? extends DimensionHandler> dimensionHandler() default DimensionHandler.class;
+    /**
+     * 路由维度值处理器
+     */
+    Class<? extends DimensionHandler> dimensionHandler() default DefaultDimensionHandler.class;
 }

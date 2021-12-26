@@ -1,8 +1,9 @@
 package com.springframework.extensionpoint.sample.businessIdentity;
 
-import com.springframework.extensionpoint.aspect.ExtensionExecutor;
+import com.springframework.extensionpoint.annotation.ExtensionPointAutowired;
 import com.springframework.extensionpoint.sample.JunitApplication;
 import com.springframework.extensionpoint.support.businessIdentity.IdentityParam;
+import com.springframework.extensionpoint.support.businessIdentity.ThreadLocalContext;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -11,13 +12,16 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 测试入口
+ * 使用ExtensionPointAutowire注解注入执行
  *
  * @author qiye -- fuqile@youzan.com
- * Created on 2021/11/04 22:04
+ * Created on 2021/12/26 21:17
  */
 @SpringBootTest(classes = JunitApplication.class)
-public class MainTest {
+public class ExtensionPointAutowiredTest {
+
+    @ExtensionPointAutowired
+    private BusinessIdentityDemoInterface businessIdentityDemoInterface;
 
     /**
      * 背景数据：
@@ -32,15 +36,15 @@ public class MainTest {
      * 期望输出：属性A+属性B
      */
     @Test
-    public void testExecuteOverlay() {
+    public void testExecuteAllMatch() {
         IdentityParam identityParam = new IdentityParam();
         Map<String, String> actualIdentity = new HashMap<>();
         actualIdentity.put("BUSINESS_LINE", "RETAIL");
         actualIdentity.put("SHOP_ID", "12345");
         identityParam.setActualIdentity(actualIdentity);
-        List<String> attributes = ExtensionExecutor.execute("getOrderAttributesOverlay", identityParam, new Object[]{"E202111051111111"});
-        System.out.println(attributes);
-        assert attributes.size() == 2;
+        ThreadLocalContext.getContext().putParam("identity", identityParam);
+        List<String> result = businessIdentityDemoInterface.getOrderAttributesOverlay("E12345");
+        assert result.contains("属性A") && result.contains("属性B");
     }
 
     /**
@@ -62,9 +66,9 @@ public class MainTest {
         actualIdentity.put("BUSINESS_LINE", "RETAIL");
         actualIdentity.put("SHOP_ID", "11111");
         identityParam.setActualIdentity(actualIdentity);
-        List<String> attributes = ExtensionExecutor.execute("getOrderAttributesOverlay", identityParam, new Object[]{"E202111051111111"});
-        System.out.println(attributes);
-        assert attributes.size() == 1;
+        ThreadLocalContext.getContext().putParam("identity", identityParam);
+        List<String> result = businessIdentityDemoInterface.getOrderAttributesOverlay("E12345");
+        assert result.contains("属性A");
     }
 
     /**
@@ -86,9 +90,8 @@ public class MainTest {
         actualIdentity.put("BUSINESS_LINE", "RETAIL");
         actualIdentity.put("SHOP_ID", "12345");
         identityParam.setActualIdentity(actualIdentity);
-        List<String> attributes = ExtensionExecutor.execute("getOrderAttributesOptimal", identityParam, new Object[]{"E202111051111111"});
-        System.out.println(attributes);
-        assert attributes.size() == 1;
+        ThreadLocalContext.getContext().putParam("identity", identityParam);
+        List<String> result = businessIdentityDemoInterface.getOrderAttributesOptimal("E12345");
+        assert result.contains("属性B");
     }
-
 }

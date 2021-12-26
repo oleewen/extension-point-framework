@@ -1,7 +1,7 @@
 package com.springframework.extensionpoint.support.businessIdentity;
 
 import com.google.common.collect.Lists;
-import com.springframework.extensionpoint.annotation.Extension;
+import com.springframework.extensionpoint.model.ExtensionObject;
 
 import java.util.List;
 import java.util.Map;
@@ -15,9 +15,9 @@ import java.util.Map;
 public abstract class AbstractIdentityMatchOptimalRouterStrategy extends AbstractBusinessIdentityRouterStrategy {
 
     @Override
-    protected List<Extension> matchExtension(List<Extension> candidateExtIdentities, Map<String, String> businessIdentity, List<String> orderedDimensionList) {
+    protected List<ExtensionObject> matchExtension(List<ExtensionObject> candidateExtIdentities, Map<String, String> businessIdentity, List<String> orderedDimensionList) {
         // 按要素匹配最优策略
-        Extension extensionPoint = ExtensionIdentityMatchDecider.extOptimalMatch(candidateExtIdentities, businessIdentity, orderedDimensionList);
+        ExtensionObject extensionPoint = ExtensionIdentityMatchDecider.extOptimalMatch(candidateExtIdentities, businessIdentity, orderedDimensionList);
         return Lists.newArrayList(extensionPoint);
     }
 

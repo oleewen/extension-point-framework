@@ -1,9 +1,8 @@
 package com.springframework.extensionpoint.aspect;
 
-import com.springframework.extensionpoint.model.ExceptionStrategy;
-import com.springframework.extensionpoint.model.IExtensionPoint;
-import com.springframework.extensionpoint.model.ResultStrategy;
+import com.springframework.extensionpoint.model.*;
 import com.springframework.extensionpoint.scan.ExtensionPointRegister;
+import com.springframework.extensionpoint.scan.StrategyRegister;
 import lombok.NoArgsConstructor;
 import org.springframework.util.CollectionUtils;
 
@@ -25,16 +24,16 @@ public class ExtensionExecutor {
      * 执行扩展点
      */
     @SuppressWarnings("unchecked")
-    public static <V, R> R execute(String code, V param, Object[] args) {
+    public static <R> R execute(String code, Object[] args) {
         try {
-            List<IExtensionPoint> extensionPoints = ExtensionPointRegister.getExtensionPoints(code, param);
+            List<IExtensionPoint> extensionPoints = ExtensionPointRegister.getExtensionPoints(code, args);
             if (CollectionUtils.isEmpty(extensionPoints)) {
                 throw new RuntimeException("extension point not found, code:" + code);
             }
             // execute extensionPoints
             List<Object> executeResultList = extensionPoints.stream().map(extensionPoint -> {
                 try {
-                    Method method = ExtensionPointRegister.getMethodByCode(code, extensionPoint);
+                    Method method = ExtensionPointRegister.getMethodByCode(ExtensionPointCode.getInstance(code), extensionPoint);
                     if (method == null) {
                         throw new RuntimeException("method not found, code:" + code);
                     }
@@ -45,17 +44,22 @@ public class ExtensionExecutor {
                 return null;
             }).collect(Collectors.toList());
             // use ResultStrategy
-            ResultStrategy<R> resultStrategy = ExtensionPointRegister.getResultStrategy(code);
+            ExtensionPointCode extensionPointCode = ExtensionPointCode.getInstance(code);
+            ExtensionPointObject extensionPointObject = ExtensionPointRegister.getExtensionPointObject(extensionPointCode);
+            if (extensionPointObject == null) {
+                throw new RuntimeException("extension point not found, code:" + extensionPointCode);
+            }
+            ResultStrategy<R> resultStrategy = (ResultStrategy<R>) StrategyRegister.getInstance().getResultStrategy(extensionPointObject.getResultStrategy());
             if (resultStrategy == null) {
                 throw new RuntimeException("result strategy can not null");
             }
             return resultStrategy.execute((List<R>) executeResultList);
         } catch (Exception ex) {
             // use ExceptionStrategy
-            ExceptionStrategy<R, V> exceptionStrategy = ExtensionPointRegister.getExceptionStrategy(code);
-            if (exceptionStrategy != null) {
-                return exceptionStrategy.execute(param, ex);
-            }
+//            ExceptionStrategy<R, V> exceptionStrategy = ExtensionPointRegister.getExceptionStrategy(code);
+//            if (exceptionStrategy != null) {
+//                return exceptionStrategy.execute(param, ex);
+//            }
             throw ex;
         }
     }

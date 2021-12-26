@@ -1,36 +1,31 @@
 package com.springframework.extensionpoint.scan;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.springframework.extensionpoint.annotation.Extension;
 import com.springframework.extensionpoint.annotation.ExtensionPoint;
+import com.springframework.extensionpoint.aspect.RouterParam;
 import com.springframework.extensionpoint.model.*;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import static org.springframework.util.ClassUtils.getAllInterfacesForClass;
 
 @Component
 public class ExtensionPointRegister implements ApplicationListener<ContextRefreshedEvent> {
 
-    private static final Map<ExtensionPointCode, List<Method>> CODE_METHOD_MAP = new HashMap<>();
-    private static final Map<Method, IExtensionPoint> METHOD_EXTENSION_POINT_MAP = new HashMap<>();
-    private static final Map<ExtensionPointCode, RouterStrategy<?, ? extends IExtensionPoint>> EXTENSION_POINT_ROUTER_STRATEGY_MAP = new HashMap<>();
-    private static final Map<ExtensionPointCode, ResultStrategy<?>> EXTENSION_POINT_RESULT_STRATEGY_MAP = new HashMap<>();
-    private static final Map<ExtensionPointCode, ExceptionStrategy<?, ?>> EXTENSION_POINT_EXCEPTION_STRATEGY_MAP = new HashMap<>();
-    private static final Map<ExtensionPointCode, List<Extension>> CODE_EXTENSION_MAP = new HashMap<>();
-    private static final Map<Extension, RouterFeatureStrategy<?>> EXTENSION_ROUTER_FEATURE_STRATEGY_MAP = new HashMap<>();
-    private static final Map<Extension, IExtensionPoint> EXTENSION_EXTENSION_POINT_MAP = new HashMap<>();
-    private static final Map<Class<? extends RouterStrategy<?, ? extends IExtensionPoint>>, RouterStrategy<?, ? extends IExtensionPoint>> ROUTER_STRATEGY_CLASS_MAP = new HashMap<>();
-    private static final Map<Class<? extends ResultStrategy<?>>, ResultStrategy<?>> RESULT_STRATEGY_CLASS_MAP = new HashMap<>();
-    private static final Map<Class<? extends ExceptionStrategy<?, ?>>, ExceptionStrategy<?, ?>> EXCEPTION_STRATEGY_CLASS_MAP = new HashMap<>();
-    private static final Map<Class<? extends RouterFeatureStrategy<?>>, RouterFeatureStrategy<?>> ROUTER_FEATURE_STRATEGY_CLASS_MAP = new HashMap<>();
+    private static final Map<ExtensionPointCode, ExtensionPointObject> CODE_EXTENSION_POINT_OBJECT_MAP = new ConcurrentHashMap<>();
+    private static final Map<String, ExtensionPointCode> INTERFACE_CLASS_EXTENSION_POINT_MAP = new ConcurrentHashMap<>();
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
@@ -44,19 +39,19 @@ public class ExtensionPointRegister implements ApplicationListener<ContextRefres
     public void registerStrategy(ApplicationContext applicationContext) {
         Map<String, RouterStrategy> routerStrategyMap = applicationContext.getBeansOfType(RouterStrategy.class);
         if (!CollectionUtils.isEmpty(routerStrategyMap)) {
-            routerStrategyMap.values().forEach(strategyBean -> ROUTER_STRATEGY_CLASS_MAP.put((Class<? extends RouterStrategy<?, ? extends IExtensionPoint>>) strategyBean.getClass(), strategyBean));
+            routerStrategyMap.values().forEach(strategyBean -> StrategyRegister.getInstance().addRouterStrategy(strategyBean));
         }
         Map<String, ResultStrategy> resultStrategyMap = applicationContext.getBeansOfType(ResultStrategy.class);
         if (!CollectionUtils.isEmpty(resultStrategyMap)) {
-            resultStrategyMap.values().forEach(strategyBean -> RESULT_STRATEGY_CLASS_MAP.put((Class<? extends ResultStrategy<?>>) strategyBean.getClass(), strategyBean));
+            resultStrategyMap.values().forEach(strategyBean -> StrategyRegister.getInstance().addResultStrategy(strategyBean));
         }
         Map<String, ExceptionStrategy> exceptionStrategyMap = applicationContext.getBeansOfType(ExceptionStrategy.class);
         if (!CollectionUtils.isEmpty(exceptionStrategyMap)) {
-            exceptionStrategyMap.values().forEach(strategyBean -> EXCEPTION_STRATEGY_CLASS_MAP.put((Class<? extends ExceptionStrategy<?, ?>>) strategyBean.getClass(), strategyBean));
+            exceptionStrategyMap.values().forEach(strategyBean -> StrategyRegister.getInstance().addExceptionStrategy(strategyBean));
         }
-        Map<String, RouterFeatureStrategy> routerFeatureStrategyMap = applicationContext.getBeansOfType(RouterFeatureStrategy.class);
-        if (!CollectionUtils.isEmpty(routerFeatureStrategyMap)) {
-            routerFeatureStrategyMap.values().forEach(strategyBean -> ROUTER_FEATURE_STRATEGY_CLASS_MAP.put((Class<? extends RouterFeatureStrategy<?>>) strategyBean.getClass(), strategyBean));
+        Map<String, DimensionHandler> dimensionHandlerMap = applicationContext.getBeansOfType(DimensionHandler.class);
+        if (!CollectionUtils.isEmpty(dimensionHandlerMap)) {
+            dimensionHandlerMap.values().forEach(handler -> StrategyRegister.getInstance().addDimensionHandler(handler));
         }
     }
 
@@ -65,80 +60,94 @@ public class ExtensionPointRegister implements ApplicationListener<ContextRefres
      */
     public void registerExtensionPoint(ApplicationContext applicationContext) {
         Map<String, IExtensionPoint> pointBeanMap = applicationContext.getBeansOfType(IExtensionPoint.class);
+        Map<ExtensionPointCode, List<ExtensionObject>> codeExtensionObjectMap = Maps.newHashMap();
         pointBeanMap.forEach((beanName, pointBean) -> {
+            String interfaceClassName = resolveInterfaceName(pointBean.getClass());
             Method[] extMethods = pointBean.getClass().getDeclaredMethods();
             for (Method method : extMethods) {
                 ExtensionPoint extensionPoint = AnnotationUtils.findAnnotation(method, ExtensionPoint.class);
                 if (extensionPoint == null) {
                     continue;
                 }
-                METHOD_EXTENSION_POINT_MAP.put(method, pointBean);
                 ExtensionPointCode extensionPointCode = ExtensionPointCode.getInstance(extensionPoint.code());
-                CODE_METHOD_MAP.computeIfAbsent(extensionPointCode, key -> new ArrayList<>()).add(method);
-                RouterStrategy<?, ? extends IExtensionPoint> routerStrategy = ROUTER_STRATEGY_CLASS_MAP.get(extensionPoint.routerStrategy());
-                if (routerStrategy != null) {
-                    EXTENSION_POINT_ROUTER_STRATEGY_MAP.put(extensionPointCode, routerStrategy);
-                }
-                ResultStrategy<?> resultStrategy = RESULT_STRATEGY_CLASS_MAP.get(extensionPoint.resultStrategy());
-                if (resultStrategy != null) {
-                    EXTENSION_POINT_RESULT_STRATEGY_MAP.put(extensionPointCode, resultStrategy);
-                }
-                ExceptionStrategy<?, ?> exceptionStrategy = EXCEPTION_STRATEGY_CLASS_MAP.get(extensionPoint.exceptionStrategy());
-                if (exceptionStrategy != null) {
-                    EXTENSION_POINT_EXCEPTION_STRATEGY_MAP.put(extensionPointCode, exceptionStrategy);
-                }
+                ExtensionPointObject extensionPointObject = new ExtensionPointObject();
+                extensionPointObject.setExtensionPointCode(extensionPointCode);
+                extensionPointObject.setRouterStrategy(extensionPoint.routerStrategy());
+                extensionPointObject.setResultStrategy(extensionPoint.resultStrategy());
+                extensionPointObject.setExceptionStrategy(extensionPoint.exceptionStrategy());
+                CODE_EXTENSION_POINT_OBJECT_MAP.put(extensionPointObject.getExtensionPointCode(), extensionPointObject);
                 Extension extension = AnnotationUtils.findAnnotation(method, Extension.class);
                 if (extension == null) {
                     continue;
                 }
-                CODE_EXTENSION_MAP.computeIfAbsent(extensionPointCode, key -> new ArrayList<>()).add(extension);
-                EXTENSION_EXTENSION_POINT_MAP.put(extension, pointBean);
-                RouterFeatureStrategy<?> routerFeatureStrategy = ROUTER_FEATURE_STRATEGY_CLASS_MAP.get(extension.routerFeatureStrategy());
-                if (routerFeatureStrategy != null) {
-                    EXTENSION_ROUTER_FEATURE_STRATEGY_MAP.put(extension, routerFeatureStrategy);
-                }
+                ExtensionObject extensionObject = new ExtensionObject();
+                extensionObject.setMethod(method);
+                extensionObject.setExtensionInstance(pointBean);
+                extensionObject.setDimensions(extension.dimensions());
+                extensionObject.setDimensionHandler(extension.dimensionHandler());
+                List<ExtensionObject> extensionObjectList = codeExtensionObjectMap.computeIfAbsent(extensionPointCode, key -> Lists.newArrayList());
+                extensionObjectList.add(extensionObject);
+                INTERFACE_CLASS_EXTENSION_POINT_MAP.put(interfaceClassName + ":" + method.getName(), extensionPointCode);
+            }
+        });
+        CODE_EXTENSION_POINT_OBJECT_MAP.forEach((key, value) -> {
+            ExtensionPointObject extensionPointObject = CODE_EXTENSION_POINT_OBJECT_MAP.get(key);
+            if (extensionPointObject != null) {
+                extensionPointObject.setExtensionList(codeExtensionObjectMap.get(key));
             }
         });
     }
 
+    public static ExtensionPointObject getExtensionPointObject(ExtensionPointCode extensionPointCode) {
+        return CODE_EXTENSION_POINT_OBJECT_MAP.get(extensionPointCode);
+    }
+
     @SuppressWarnings("unchecked")
-    public static <V, T extends IExtensionPoint> List<T> getExtensionPoints(String code, V v) {
+    public static List<IExtensionPoint> getExtensionPoints(String code, Object[] args) {
         ExtensionPointCode extensionPointCode = ExtensionPointCode.getInstance(code);
-        RouterStrategy<V, IExtensionPoint> routerStrategy = (RouterStrategy<V, IExtensionPoint>) EXTENSION_POINT_ROUTER_STRATEGY_MAP.get(extensionPointCode);
+        ExtensionPointObject extensionPointObject = ExtensionPointRegister.getExtensionPointObject(extensionPointCode);
+        RouterStrategy<? extends IExtensionPoint> routerStrategy = StrategyRegister.getInstance().getRouterStrategy(extensionPointObject.getRouterStrategy());
         if (routerStrategy == null) {
             throw new RuntimeException("please set router strategy first");
         }
-        return (List<T>) routerStrategy.execute(code, v);
+        RouterParam routerParam = new RouterParam(extensionPointCode, args, routerStrategy.customGetParam(args));
+        return (List<IExtensionPoint>) routerStrategy.execute(routerParam);
     }
 
-    public static Method getMethodByCode(String code, IExtensionPoint extensionPoint) {
-        List<Method> methods = CODE_METHOD_MAP.get(ExtensionPointCode.getInstance(code));
-        if (CollectionUtils.isEmpty(methods)) {
+    public static Method getMethodByCode(ExtensionPointCode code, IExtensionPoint extensionPoint) {
+        ExtensionPointObject extensionPointObject = CODE_EXTENSION_POINT_OBJECT_MAP.get(code);
+        if (extensionPointObject == null || extensionPointObject.getExtensionList() == null) {
             return null;
         }
-        return methods.stream().filter(method -> extensionPoint == METHOD_EXTENSION_POINT_MAP.get(method)).findFirst().orElse(null);
+        return extensionPointObject.getExtensionList().stream().filter(instance -> extensionPoint == instance.getExtensionInstance()).map(ExtensionObject::getMethod).findFirst().orElse(null);
     }
 
-    @SuppressWarnings("unchecked")
-    public static <T> ResultStrategy<T> getResultStrategy(String code) {
-        return (ResultStrategy<T>) EXTENSION_POINT_RESULT_STRATEGY_MAP.get(ExtensionPointCode.getInstance(code));
+    public static List<ExtensionObject> getExtensionPointImplList(ExtensionPointCode code) {
+        ExtensionPointObject extensionPointObject = CODE_EXTENSION_POINT_OBJECT_MAP.get(code);
+        if (extensionPointObject == null) {
+            return Lists.newArrayList();
+        }
+        return extensionPointObject.getExtensionList();
     }
 
-    @SuppressWarnings("unchecked")
-    public static <T, V> ExceptionStrategy<T, V> getExceptionStrategy(String code) {
-        return (ExceptionStrategy<T, V>) EXTENSION_POINT_EXCEPTION_STRATEGY_MAP.get(ExtensionPointCode.getInstance(code));
+    public static String resolveInterfaceName(Class<?> defaultInterfaceClass) {
+        // TODO Should be configurable extension point interface name, used to support multi-interface extension
+        Class<?> interfaceClass = null;
+        // get from annotation element type
+        if (defaultInterfaceClass != null) {
+            // Find all interfaces from the annotated class
+            Class<?>[] allInterfaces = getAllInterfacesForClass(defaultInterfaceClass);
+            if (allInterfaces.length > 0) {
+                interfaceClass = allInterfaces[0];
+            }
+        }
+        Assert.notNull(interfaceClass, "interface class must be present!");
+        Assert.isTrue(interfaceClass.isInterface(), "The annotated type must be an interface!");
+        return interfaceClass.getName();
     }
 
-    public static List<Extension> getExtensionPointImplList(String code) {
-        return CODE_EXTENSION_MAP.get(ExtensionPointCode.getInstance(code));
+    public static ExtensionPointCode getExtensionPointCode(Class<?> interfaceClass, Method method) {
+        return INTERFACE_CLASS_EXTENSION_POINT_MAP.get(interfaceClass.getName() + ":" + method.getName());
     }
 
-    @SuppressWarnings("unchecked")
-    public static <T extends RouterFeature> RouterFeatureStrategy<T> getRouterFeatureStrategy(Extension extensionPointImpl) {
-        return (RouterFeatureStrategy<T>) EXTENSION_ROUTER_FEATURE_STRATEGY_MAP.get(extensionPointImpl);
-    }
-
-    public static IExtensionPoint getExtensionPointInstance(Extension extensionPointImpl) {
-        return EXTENSION_EXTENSION_POINT_MAP.get(extensionPointImpl);
-    }
 }

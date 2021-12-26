@@ -1,8 +1,11 @@
 package com.springframework.extensionpoint.scan;
 
 import com.springframework.extensionpoint.annotation.ExtensionPoint;
+import com.springframework.extensionpoint.aspect.ExtensionPointAutowiredAnnotationBeanPostProcessor;
 import com.springframework.extensionpoint.model.*;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.annotation.AnnotationAttributes;
@@ -29,6 +32,8 @@ public class ExtensionPointScannerRegister implements ImportBeanDefinitionRegist
         Set<String> scanPackages = getScanPackages(importingClassMetadata);
         // 将包路径下的类注册为bean
         doScanAndRegistryBean(registry, scanPackages);
+        // 注册ExtensionPointAutowired注解解析器
+        registerInfrastructureBean(registry, ExtensionPointAutowiredAnnotationBeanPostProcessor.BEAN_NAME, ExtensionPointAutowiredAnnotationBeanPostProcessor.class);
     }
 
     /**
@@ -53,7 +58,19 @@ public class ExtensionPointScannerRegister implements ImportBeanDefinitionRegist
         scanner.addIncludeFilter(new AssignableTypeFilter(RouterStrategy.class));
         scanner.addIncludeFilter(new AssignableTypeFilter(ResultStrategy.class));
         scanner.addIncludeFilter(new AssignableTypeFilter(ExceptionStrategy.class));
-        scanner.addIncludeFilter(new AssignableTypeFilter(RouterFeatureStrategy.class));
+        scanner.addIncludeFilter(new AssignableTypeFilter(DimensionHandler.class));
         scanner.scan(scanPackages.toArray(new String[]{}));
+    }
+
+    /**
+     * 注册bean
+     */
+    private void registerInfrastructureBean(BeanDefinitionRegistry beanDefinitionRegistry, String beanName, Class<?> beanType) {
+        if (beanDefinitionRegistry.containsBeanDefinition(beanName)) {
+            return;
+        }
+        RootBeanDefinition beanDefinition = new RootBeanDefinition(beanType);
+        beanDefinition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+        beanDefinitionRegistry.registerBeanDefinition(beanName, beanDefinition);
     }
 }
