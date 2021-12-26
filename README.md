@@ -6,7 +6,7 @@
 
 **1. 使用简介**
 
-    1. 使用@ExtensionPointAutowired替换@Autowire来注入
+    1. 使用@ExtensionPointAutowired替换@Autowire注入扩展点
     2. 与正常接口调用使用无异
 
 **2. Sample**
@@ -17,7 +17,7 @@
 
 **1. 使用简介**
 
-    1. 直接通过静态类ExtensionExecutor.execute来调用
+    1. 直接调用静态类ExtensionExecutor.execute执行
     2. 需要显示传入扩展点接口code、接口调用参数数组
 
 **2. Sample**
