@@ -71,6 +71,7 @@ public class ExtensionPointRegister implements ApplicationListener<ContextRefres
         pointBeanMap.forEach((beanName, pointBean) -> {
             String interfaceClassName = resolveInterfaceName(pointBean.getClass());
             Method[] extMethods = pointBean.getClass().getDeclaredMethods();
+            Extension classExtension = AnnotationUtils.findAnnotation(pointBean.getClass(), Extension.class);
             for (Method method : extMethods) {
                 ExtensionPoint extensionPoint = AnnotationUtils.findAnnotation(method, ExtensionPoint.class);
                 if (extensionPoint == null) {
@@ -83,15 +84,15 @@ public class ExtensionPointRegister implements ApplicationListener<ContextRefres
                 extensionPointObject.setResultStrategy(extensionPoint.resultStrategy());
                 extensionPointObject.setExceptionStrategy(extensionPoint.exceptionStrategy());
                 CODE_EXTENSION_POINT_OBJECT_MAP.put(extensionPointObject.getExtensionPointCode(), extensionPointObject);
-                Extension extension = AnnotationUtils.findAnnotation(method, Extension.class);
-                if (extension == null) {
+                Extension methodExtension = AnnotationUtils.findAnnotation(method, Extension.class);
+                if (classExtension == null && methodExtension == null) {
                     continue;
                 }
                 ExtensionObject extensionObject = new ExtensionObject();
                 extensionObject.setMethod(method);
                 extensionObject.setExtensionInstance(pointBean);
-                extensionObject.setDimensions(extension.dimensions());
-                extensionObject.setDimensionHandler(extension.dimensionHandler());
+                extensionObject.setDimensions(methodExtension != null ? methodExtension.dimensions() : classExtension.dimensions());
+                extensionObject.setDimensionHandler(methodExtension != null ? methodExtension.dimensionHandler() : classExtension.dimensionHandler());
                 List<ExtensionObject> extensionObjectList = codeExtensionObjectMap.computeIfAbsent(extensionPointCode, key -> Lists.newArrayList());
                 extensionObjectList.add(extensionObject);
                 INTERFACE_CLASS_EXTENSION_POINT_MAP.put(interfaceClassName + ":" + method.getName(), extensionPointCode);

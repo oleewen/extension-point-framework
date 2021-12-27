@@ -18,6 +18,9 @@ public abstract class AbstractIdentityMatchOptimalRouterStrategy extends Abstrac
     protected List<ExtensionObject> matchExtension(List<ExtensionObject> candidateExtIdentities, Map<String, String> businessIdentity, List<String> orderedDimensionList) {
         // 按要素匹配最优策略
         ExtensionObject extensionPoint = ExtensionIdentityMatchDecider.extOptimalMatch(candidateExtIdentities, businessIdentity, orderedDimensionList);
+        if (extensionPoint == null) {
+            return Lists.newArrayList();
+        }
         return Lists.newArrayList(extensionPoint);
     }
 
