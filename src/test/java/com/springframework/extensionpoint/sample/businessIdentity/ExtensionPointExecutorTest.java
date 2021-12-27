@@ -39,6 +39,7 @@ public class ExtensionPointExecutorTest {
         actualIdentity.put("BUSINESS_LINE", "RETAIL");
         actualIdentity.put("SHOP_ID", "12345");
         identityParam.setActualIdentity(actualIdentity);
+        // mock the actual business identity into thread local
         ThreadLocalContext.getContext().putParam("identity", identityParam);
         List<String> attributes = ExtensionExecutor.execute("getOrderAttributesOverlay", new Object[]{"E202111051111111"});
         assert attributes.contains("属性A") && attributes.contains("属性B");
@@ -63,6 +64,7 @@ public class ExtensionPointExecutorTest {
         actualIdentity.put("BUSINESS_LINE", "RETAIL");
         actualIdentity.put("SHOP_ID", "11111");
         identityParam.setActualIdentity(actualIdentity);
+        // mock the actual business identity into thread local
         ThreadLocalContext.getContext().putParam("identity", identityParam);
         List<String> attributes = ExtensionExecutor.execute("getOrderAttributesOverlay", new Object[]{"E202111051111111"});
         assert attributes.contains("属性A");
@@ -87,6 +89,7 @@ public class ExtensionPointExecutorTest {
         actualIdentity.put("BUSINESS_LINE", "RETAIL");
         actualIdentity.put("SHOP_ID", "12345");
         identityParam.setActualIdentity(actualIdentity);
+        // mock the actual business identity into thread local
         ThreadLocalContext.getContext().putParam("identity", identityParam);
         List<String> attributes = ExtensionExecutor.execute("getOrderAttributesOptimal", new Object[]{"E202111051111111"});
         assert attributes.contains("属性B");

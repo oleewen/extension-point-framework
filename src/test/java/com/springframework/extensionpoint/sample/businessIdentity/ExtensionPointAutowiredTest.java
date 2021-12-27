@@ -42,6 +42,7 @@ public class ExtensionPointAutowiredTest {
         actualIdentity.put("BUSINESS_LINE", "RETAIL");
         actualIdentity.put("SHOP_ID", "12345");
         identityParam.setActualIdentity(actualIdentity);
+        // mock the actual business identity into thread local
         ThreadLocalContext.getContext().putParam("identity", identityParam);
         List<String> result = businessIdentityDemoInterface.getOrderAttributesOverlay("E12345");
         assert result.contains("属性A") && result.contains("属性B");
@@ -66,6 +67,7 @@ public class ExtensionPointAutowiredTest {
         actualIdentity.put("BUSINESS_LINE", "RETAIL");
         actualIdentity.put("SHOP_ID", "11111");
         identityParam.setActualIdentity(actualIdentity);
+        // mock the actual business identity into thread local
         ThreadLocalContext.getContext().putParam("identity", identityParam);
         List<String> result = businessIdentityDemoInterface.getOrderAttributesOverlay("E12345");
         assert result.contains("属性A");
@@ -90,6 +92,7 @@ public class ExtensionPointAutowiredTest {
         actualIdentity.put("BUSINESS_LINE", "RETAIL");
         actualIdentity.put("SHOP_ID", "12345");
         identityParam.setActualIdentity(actualIdentity);
+        // mock the actual business identity into thread local
         ThreadLocalContext.getContext().putParam("identity", identityParam);
         List<String> result = businessIdentityDemoInterface.getOrderAttributesOptimal("E12345");
         assert result.contains("属性B");
